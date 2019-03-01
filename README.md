@@ -1,5 +1,5 @@
 # MyServerXml
-version 1.0 (Qt only)
+version 1.0 (Ojiajia only)
 
 принимает xml сообщение от клиента
 
