@@ -1,42 +1,84 @@
-#ifndef MYSERVER_H
-#define MYSERVER_H
+#ifndef MYCLIENT_H
+#define MYCLIENT_H
 #pragma once
-#include <QObject>
+#include <QWidget>
+#include <QTcpSocket>
+#include <QDialog>
 #include <QtWidgets>
-#include <QtCore>
-#include <QtNetwork>
-#include <QList>
+#include <QInputDialog>
+#include <QFlags>
 #include <QtXml>
 
-class QTcpServer;
 class QTextEdit;
-class QTcpSocket;
-// ======================================================================
-class MyServer : public QWidget {
-Q_OBJECT
-private:
-    QTcpServer* m_ptcpServer;     //атрибут
-    QTextEdit*  m_ptxt;           //длина следующего текстового
-                                  //блока от сокета
-    quint16     m_nNextBlockSize; //многострочное текстовое поле
-                                  //для информирования о происходящих
-                                  //соединениях
-private:
+class QLineEdit;
 
-    void sendToClient(QTcpSocket* pSocket, QString str);
-    void traverseNode(QDomNode& domNode);
+class MyClient : public QWidget{
+Q_OBJECT
+
+private:
+    QTcpSocket*      m_pTcpSocket;     // управление клиентом
+    QTextEdit*       m_ptxtInfo;       // отображение информации
+    QLineEdit*       m_ptxtInput;      // ввод информации
+    quint16          m_nNextBlockSize; // хранение  длины следующего полученного
+                                       // от сокета блока
+    QString*         Message;
+    QString          inputToText;
+    QComboBox*       m_UserList;
+    QString          xmlMsg;
+
+
+    void             sendData(QString str);
+
+    QMap<QTcpSocket*,QString> usersList;
 
 public:
+    MyClient        (const QString& strHost,
+                     int            nPort,
+                     QWidget*       pwgt = 0,
+                     QString        userNickName = "");
+    QString          NickName;
+    QString          traverseNode(QDomNode& domNode, QString &str2);
+    QString          str2;
+    QString          str;
 
-    MyServer(int nPort, QWidget* pwgt = 0);
+    // флаги для сообщений
+    enum Option
+    {
+        publicMsg  = 0x0,
+        privateMsg = 0x1,
+        nick       = 0x2
+    };
+    Q_DECLARE_FLAGS(Options, Option)
 
-    QString str; // message with data
+
+private slots:
+
+// void - не возвращает никакого значения
+
+    void slotReadyRead   (                            );
+    void slotError       (QAbstractSocket::SocketError);
+    void slotSendToServer(                            );
+    void slotConnected   (                            );  
+    void slotSendNick    (                            );
+};
+
+class InputDialog : public QDialog {
+Q_OBJECT
+
+private:
+//    QLineEdit* m_ptxtFirstName;
+
+public:
+    InputDialog     (QWidget* pwgt = 0);
+    QLineEdit*      m_ptxtFirstName;
+    QString         slotGiveNickName();
+    QString         userNickName;
 
 
-public slots:
-
-    virtual void slotNewConnection();
-            void slotReadClient();
+//private slots:
+//    void slotGiveNickName();
 
 };
-#endif // MYSERVER_H
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(MyClient::Options)
+#endif // MYCLIENT_H
